@@ -45,7 +45,7 @@ The pulse counter is most accurate when counting pulses from an electronic sourc
 
 The default setup for the specified pulse pin is to be pulled down via the internal pull down resistor, with positive 3v pulses triggering the counting. To change this, set the service variable `PULL_UP_DOWN` to `UP`.
 
-_NOTE_: As with most embedded Linux devices, pulse counting may not be accurate or real-time due to the OS, hardware, software or other processes running on the device. If you need strict real-time accuracy without missing even one pulse, you should use a microcontroller instead. This block is not suitable for critical pulse counting applications.
+_NOTE_: As with most embedded Linux devices, pulse counting may not be accurate or real-time due to the OS, hardware, software or other processes running on the device. If you need strict real-time accuracy without missing even one pulse, you should use a microcontroller instead. This block is not intended for critical pulse counting applications.
 
 ## Pulse count reset
 You can cause the running pulse count, `pulse_count` to reset to zero by sending a logic high pulse to the pin set by device variable `GPIO_RESET_PIN` which has a debounce value set to 200 ms, so a pushbutton switch should suffice.

@@ -26,6 +26,8 @@ services:
     privileged: true
     labels:
       io.balena.features.balena-api: '1'
+    expose:
+      - '7575'
 ```
 
 Note that the container must be privileged in order to access the GPIO pins, as well as include the balena-api label to access the device's api features.

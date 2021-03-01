@@ -64,6 +64,7 @@ def background_web(server_socket):
 
         # Send HTTP response
         response = 'HTTP/1.0 200 OK\n\n'+ json.dumps(pulse_output)
+        print(pulse_output)
         client_connection.sendall(response.encode())
         client_connection.close()
 
@@ -103,7 +104,8 @@ def action() :
     pulse_output["pps_mult"] = pulse_per_second * pulse_multiplier
     pulse_output["ppm_mult"] = pulse_per_minute * pulse_multiplier
     pulse_output["pph_mult"] = pulse_per_hour * pulse_multiplier
-    print(pulse_output)
+    #pulse_output_data = json.dumps(pulse_output)
+    #print(pulse_output)
     if env_vars["mqtt_address"] != "none":
         client.publish('pulse_data', json.dumps(pulse_output))
     pulse_per_second = 0

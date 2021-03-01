@@ -8,9 +8,21 @@ import paho.mqtt.client as mqtt
 import json
 import threading
 import signal
+import socket
 
 pulse_per_second= 0
 pulse_count = 0
+pulse_output = {
+    "uuid": os.environ.get('BALENA_DEVICE_UUID'),
+    "gpio": 0,
+    "pulse_per_second": 0,
+    "pulse_per_minute": 0,
+    "pulse_per_hour": 0,
+    "pulse_count": 0,
+    "pps_mult": 0,
+    "ppm_mult": 0,
+    "pph_mult": 0
+}
 env_vars = {
     "pulse_multiplier": 1,
     "gpio_pin": 37,
@@ -39,8 +51,8 @@ def mqtt_detect():
     return False
 
 # Simple webserver
-def background_web():
-    global pulse_output_data
+def background_web(server_socket):
+    global pulse_output
 
     while True:
         # Wait for client connections
@@ -48,10 +60,10 @@ def background_web():
 
         # Get the client request
         request = client_connection.recv(1024).decode()
-        #print(request)
+        print(request)
 
         # Send HTTP response
-        response = 'HTTP/1.0 200 OK\n\n'+ pulse_output_data
+        response = 'HTTP/1.0 200 OK\n\n'+ json.dumps(pulse_output)
         client_connection.sendall(response.encode())
         client_connection.close()
 
@@ -73,21 +85,9 @@ def on_reset(channel):
 
 # This function serves as the callback triggered on every run of our IntervalThread
 def action() :
-    global pulse_per_second, sum_queue, client, env_vars
+    global pulse_per_second, sum_queue, client, env_vars, pulse_output
     pulse_per_minute = 0
     pulse_per_hour = 0
-    pulse_output_data = "{}"
-    pulse_output = {
-        "uuid": os.environ.get('BALENA_DEVICE_UUID'),
-        "gpio": env_vars["gpio_pin"],
-        "pulse_per_second": 0,
-        "pulse_per_minute": 0,
-        "pulse_per_hour": 0,
-        "pulse_count": 0,
-        "pps_mult": 0,
-        "ppm_mult": 0,
-        "pph_mult": 0
-    }
     pulse_multiplier = env_vars["pulse_multiplier"]
     sum_queue.append(pulse_per_second)
     if len(sum_queue) > 1:
@@ -95,7 +95,7 @@ def action() :
         pulse_per_hour = sum(sum_queue[-3600:])
     if len(sum_queue) > 3600:
         sum_queue.pop(0)
-
+    pulse_output["gpio"] = env_vars["gpio_pin"]
     pulse_output["pulse_per_second"] = pulse_per_second
     pulse_output["pulse_per_minute"] = pulse_per_minute
     pulse_output["pulse_per_hour"] = pulse_per_hour
@@ -103,12 +103,9 @@ def action() :
     pulse_output["pps_mult"] = pulse_per_second * pulse_multiplier
     pulse_output["ppm_mult"] = pulse_per_minute * pulse_multiplier
     pulse_output["pph_mult"] = pulse_per_hour * pulse_multiplier
-    pulse_output_data = json.dumps(pulse_output)
-    print(pulse_output_data)
+    print(pulse_output)
     if env_vars["mqtt_address"] != "none":
-        client.publish('pulse_data', pulse_output_data)
-    #print('action ! -> time : {:.1f}s'.format(time.time()-start_time))
-    #print(pulse_per_second)
+        client.publish('pulse_data', json.dumps(pulse_output))
     pulse_per_second = 0
 
 # See https://stackoverflow.com/questions/2697039/python-equivalent-of-setinterval
@@ -143,38 +140,40 @@ def main():
     env_vars["pull_up_down"] = os.getenv('PULL_UP_DOWN', 'DOWN')
 
     GPIO.setmode(GPIO.BOARD)
+    gpio_pin = int(env_vars["gpio_pin"])
 
     # Set the pin for the incoming pulse
     if env_vars["pull_up_down"] == "UP":
-        GPIO.setup(env_vars["gpio_pin"], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         test_cond = GPIO.LOW
     else:
-        GPIO.setup(env_vars["gpio_pin"], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.setup(gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         test_cond = GPIO.HIGH
 
     if env_vars["bounce_time"] == 0:
         bounce_time = 0
     else:
         if str(env_vars["bounce_time"]).isnumeric():
-            bounce_time = env_vars["bounce_time"]/1000
+            bounce_time = int(env_vars["bounce_time"])/1000
+            print("Bounce time set to {0} second(s)".format(bounce_time))
         else:
             bounce_time = 0
 
     # Set the pin for pulse count reset
-    GPIO.setup(env_vars["gpio_reset_pin"], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    GPIO.add_event_detect(env_vars["gpio_reset_pin"], GPIO.FALLING, callback=on_reset, bouncetime=200)
+    GPIO.setup(int(env_vars["gpio_reset_pin"]), GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.add_event_detect(int(env_vars["gpio_reset_pin"]), GPIO.FALLING, callback=on_reset, bouncetime=200)
 
     if mqtt_detect() and env_vars["mqtt_address"] == "none":
         env_vars["mqtt_address"] = "mqtt"
 
     if env_vars["mqtt_address"] != "none":
-        #client = mqtt.Client()
+        print("Starting mqtt client, publishing to {0}:1883".format(env_vars["mqtt_address"]))
         client.connect(env_vars["mqtt_address"], 1883, 60)
         client.loop_start()
     else:
-        env_vars["enable_webserver"] = True
+        env_vars["enable_webserver"] = "True"
 
-    if env_vars["enable_webserver"] == True:
+    if env_vars["enable_webserver"] == "True":
         SERVER_HOST = '0.0.0.0'
         SERVER_PORT = 7575
 
@@ -183,9 +182,9 @@ def main():
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server_socket.bind((SERVER_HOST, SERVER_PORT))
         server_socket.listen(1)
-        print('Listening on port %s ...' % SERVER_PORT)
+        print("Web server listening on port {0}...".format(SERVER_PORT))
 
-        t = threading.Thread(target=background_web)
+        t = threading.Thread(target=background_web, args=(server_socket,))
         t.start()
 
     # Handle SIGINT and SIFTERM with the help of the callback function
@@ -193,14 +192,14 @@ def main():
     signal.signal(signal.SIGINT, signal_handler)
     # start action every 1s
     inter=IntervalThread(1,action)
-    
+
     # See https://www.g-loaded.eu/2016/11/24/how-to-terminate-running-python-threads-using-signals/
     while True:
         try:
-            GPIO.wait_for_edge(env_vars["gpio_pin"], GPIO.RISING)
+            GPIO.wait_for_edge(gpio_pin, GPIO.RISING)
             if bounce_time > 0:
                 time.sleep(bounce_time)
-                if GPIO.input(env_vars["gpio_pin"]) == test_cond:
+                if GPIO.input(gpio_pin) == test_cond:
                     pulse_per_second = pulse_per_second + 1
                     pulse_count = pulse_count + 1
             else:

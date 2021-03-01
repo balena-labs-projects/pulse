@@ -104,7 +104,6 @@ def action() :
     pulse_output["pps_mult"] = pulse_per_second * pulse_multiplier
     pulse_output["ppm_mult"] = pulse_per_minute * pulse_multiplier
     pulse_output["pph_mult"] = pulse_per_hour * pulse_multiplier
-    #pulse_output_data = json.dumps(pulse_output)
     #print(pulse_output)
     if env_vars["mqtt_address"] != "none":
         client.publish('pulse_data', json.dumps(pulse_output))
@@ -133,7 +132,7 @@ def main():
     global pulse_per_second, pulse_count, env_vars, client
 
     # device variables
-    env_vars["pulse_multiplier"] = os.getenv('PULSE_MULTIPLIER', 1)
+    env_vars["pulse_multiplier"] = float(os.getenv('PULSE_MULTIPLIER', '1'))
     env_vars["gpio_pin"] = os.getenv('GPIO_PIN', 37)
     env_vars["bounce_time"]  = os.getenv('BOUNCE_TIME', 0)
     env_vars["mqtt_address"] = os.getenv('MQTT_ADDRESS', 'none')

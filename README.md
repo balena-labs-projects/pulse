@@ -21,7 +21,7 @@ version: '2'
 
 services:
   pulse:
-    image: balenablocks/pulse-counter
+    image: balenablocks/pulse-counter # use alanb128/pulse-block for testing
     restart: always
     privileged: true
     labels:

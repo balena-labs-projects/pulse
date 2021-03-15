@@ -169,8 +169,14 @@ def main():
 
     if env_vars["mqtt_address"] != "none":
         print("Starting mqtt client, publishing to {0}:1883".format(env_vars["mqtt_address"]))
-        client.connect(env_vars["mqtt_address"], 1883, 60)
-        client.loop_start()
+        try:
+             client.connect(env_vars["mqtt_address"], 1883, 60)
+        except Exception as e:
+            print("Error connecting to mqtt. ({0})".format(str(e)))
+            env_vars["mqtt_address"] = "none"
+            env_vars["enable_webserver"] = "True"
+        else:
+            client.loop_start()
     else:
         env_vars["enable_webserver"] = "True"
 

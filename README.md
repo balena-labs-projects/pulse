@@ -9,7 +9,7 @@ A block for counting pulses on a Raspberry Pi GPIO pin.
 - allows for use of a multiplier value to be appled to the pulse counts
 - rudimentary software-based switch debouncing
 - count data published via mqtt and/or http
-- integrates seamlessly with balenaSense version 2 or greater
+- integrates well with other balena blocks, such as Connector and Dashboard
 
 # Usage
 
@@ -57,7 +57,7 @@ You can cause the running pulse count, `pulse_count` to reset to zero by sending
 | Variable | Description | Default value |
 | -------- | ----------- | ------------- |
 | `GPIO_PIN` | Sets the pin to use for counting incoming pulses, using BOARD numbering | 37 |
-| `PULL_UP_DOWN` | Sets the selected gpio pin's internal pull up or pull down resistor. Set to either `UP` or `DOWN` | `DOWN` |
+| `PULL_UP_DOWN` | Sets the selected gpio pin's internal pull up or pull down resistor. Set to either `NONE`, `UP` or `DOWN` | `NONE` (floating)|
 | `GPIO_RESET_PIN` | Sets the pin used to reset the running pulse count. Normally pulled down and debounced 200 ms | 38|
 | `PULSE_MULTIPLIER` | Multiplies the pulses per second, minute, and hour by this factor as pps_mult, ppm_mult and pph_mult respectively | 1 |
 | `BOUNCE_TIME` | Number of milliseconds to wait before counting a pulse, used to debounce noisy mechanical switches | 0 |

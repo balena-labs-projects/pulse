@@ -68,6 +68,5 @@ You can cause the running pulse count, `pulse_count` to reset to zero by sending
 ## How it works
 This block utilizes the "raspberry-gpio-python" module, commonly known as [RPi.GPIO](https://sourceforge.net/projects/raspberry-gpio-python/). Specifically, the event_detected() function is used in a while loop that counts the pulses. A separate thread runs each second to aggregate the pulses counted in that second and add them to a running queue so that the pulses per minute and pulses per hour can be calculated. When activated, a minimal webserver runs in its own thread using a simple socket to respond to client requests.
 
-## Use with balenaSense
-Add this block to balenaSense version 2 or greater (using the docker-compose.yml entry shown above) and all of the counter data will automatically be graphed on the dashboard.
-
+## Use with other blocks
+The pulse block works well with our [connector block](https://github.com/balenablocks/connector) and [dashboard block](https://github.com/balenablocks/dashboard). Connect them together to quickly create dashboards for your pulse data.

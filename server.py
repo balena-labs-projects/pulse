@@ -138,7 +138,7 @@ def main():
     env_vars["mqtt_address"] = os.getenv('MQTT_ADDRESS', 'none')
     env_vars["gpio_reset_pin"] = os.getenv('GPIO_RESET_PIN', 38)
     env_vars["enable_webserver"] = os.getenv('ALWAYS_USE_WEBSERVER', 0)
-    env_vars["pull_up_down"] = os.getenv('PULL_UP_DOWN', 'DOWN')
+    env_vars["pull_up_down"] = os.getenv('PULL_UP_DOWN', 'NONE')
 
     GPIO.setmode(GPIO.BOARD)
     gpio_pin = int(env_vars["gpio_pin"])
@@ -147,8 +147,11 @@ def main():
     if env_vars["pull_up_down"] == "UP":
         GPIO.setup(gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         test_cond = GPIO.LOW
-    else:
+    elif env_vars["pull_up_down"] == "DOWN":
         GPIO.setup(gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        test_cond = GPIO.HIGH
+    else:
+        GPIO.setup(gpio_pin, GPIO.IN)
         test_cond = GPIO.HIGH
 
     if env_vars["bounce_time"] == 0:
@@ -203,7 +206,7 @@ def main():
     # See https://www.g-loaded.eu/2016/11/24/how-to-terminate-running-python-threads-using-signals/
     while True:
         try:
-            GPIO.wait_for_edge(gpio_pin, GPIO.RISING)
+            GPIO.wait_for_edge(gpio_pin, GPIO.FALLING)
             if bounce_time > 0:
                 time.sleep(bounce_time)
                 if GPIO.input(gpio_pin) == test_cond:

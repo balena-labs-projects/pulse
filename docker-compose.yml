@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+  pulse:
+    image: balenablocks/pulse
+    restart: always
+    privileged: true
+    labels:
+      io.balena.features.balena-api: '1'
+    expose:
+      - '7575'

@@ -8,7 +8,7 @@ A block for counting pulses on a Raspberry Pi GPIO pin.
 - provides a running pulse count that can be reset via a dedicated gpio pin
 - allows for use of a multiplier value to be appled to the pulse counts
 - rudimentary software-based switch debouncing
-- count data published via mqtt and/or http
+- count data published via mqtt or http
 - integrates well with other balena blocks, such as Connector and Dashboard
 
 # Usage
@@ -21,7 +21,7 @@ version: '2'
 
 services:
   pulse:
-    image: balenablocks/pulse-counter # use alanb128/pulse-block for testing
+    image: balenablocks/pulse
     restart: always
     privileged: true
     labels:
@@ -33,9 +33,7 @@ services:
 Note that the container must be privileged in order to access the GPIO pins, as well as include the balena-api label to access the device's api features.
 
 ## Data
-The counter data is available as json either as an mqtt payload or via the built-in webserver. To use mqtt, either include a container in your application that is named `mqtt` or provide an address for the `MQTT_ADDRESS` service variable (see below.)
-
-If no mqtt container is present and no mqtt address is set, the webserver will be available on port 7575. To force the webserver to be active, set the `ALWAYS_USE_WEBSERVER` service variable to `True`.
+The counter data is available as json either as an mqtt payload or via the built-in webserver. To use mqtt provide an address for the `MQTT_ADDRESS` service variable. If no mqtt address is set, the webserver will be available on port 7575. To force the webserver to be active along with mqtt, set the `ALWAYS_USE_WEBSERVER` service variable to `True`.
 
 The JSON will be in the following format:
 `{"uuid": "a74be18a3fdc0b3bfb510e2cf84d6008", "gpio": 37, "pulse_per_second": 3, "pulse_per_minute": 180, "pulse_per_hour": 3145, "pulse_count": 3150, "pps_mult": 3, "ppm_mult": 180, "pph_mult": 3145}` 
@@ -45,7 +43,7 @@ The values ending in `_mult` are pulse counts multiplied by the optional `PULSE_
 ## Pulses, debouncing, and accuracy
 The pulse counter is most accurate when counting pulses from an electronic source such as another computer or device providing a pwm (pulse width modulation) or square wave signal. When counting pulses from a mechanical contact such as a physical switch, multiple unwanted pulses are often generated. These pulses can be minimized or eliminated in hardware through a properly designed "R-C Circuit" consisting of one or more resistors and capacitors. Alternatively, debouncing can be achieved through software methods. This block includes rudimentary software debouncing that should be sufficient for mechanically-generated pulses that are less (slower) than three pulses per second (3 Hz). This is accomplished by delaying the pulse count for a specified number of milliseconds (1000th of a second) after the rising edge of a pulse is detected. A good starting value is 75 milliseconds, and then slowly increasing the value by 50 until you find one that works. (This debouncing method requires smaller values than others.) You may not find a value that avoids miscounting pulses in which case you may need to figure out why your switch is so noisy and improve it somehow. To define the debounce time, set the `BOUNCE_TIME` service variable. Setting the value to `0` or deleting it removes any debouncing (the default and recommended value for counting electronic pulses.)
 
-The default setup for the specified pulse pin is to be pulled down via the internal pull down resistor, with positive 3v pulses triggering the counting. To change this, set the service variable `PULL_UP_DOWN` to `UP`.
+The default setup for the specified pulse pin is to be "floating" which is ideal for connecting to electronic devices that provide a pulsed output. To invoke one of the internal pull resistors, set the service variable `PULL_UP_DOWN` to `UP` or `DOWN`. If you are using a purely mechanical switch, you should set this value.
 
 _NOTE_: As with most embedded Linux devices, pulse counting may not be accurate or real-time due to the OS, hardware, software or other processes running on the device. If you need strict real-time accuracy without missing even one pulse, you should use a microcontroller instead. This block is not intended for critical pulse counting applications.
 

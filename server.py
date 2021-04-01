@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 import time
 import datetime
 import os
-from balena import Balena
+#from balena import Balena
 import sys
 import paho.mqtt.client as mqtt
 import json
@@ -36,18 +36,9 @@ sum_queue = []
 pulse_multiplier = 0
 client = mqtt.Client()
 
-# Use the sdk to get services
+# Use the sdk to get services (eventually)
 def mqtt_detect():
-    print("Using API to detect services...")
-    balena = Balena()
-    auth_token = os.environ.get('BALENA_API_KEY')
-    balena.auth.login_with_token(auth_token)
-    device_id = os.environ.get('BALENA_DEVICE_UUID')
-    device = balena.models.device.get_with_service_details(device_id, False)
-    for service in device['current_services']:
-        if service == "mqtt":
-            print("Found a service on this device named 'mqtt'")
-            return True
+    
     return False
 
 # Simple webserver

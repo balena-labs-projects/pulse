@@ -128,9 +128,14 @@ def main():
     env_vars["bounce_time"]  = os.getenv('BOUNCE_TIME', 0)
     env_vars["mqtt_address"] = os.getenv('MQTT_ADDRESS', 'none')
     env_vars["gpio_reset_pin"] = os.getenv('GPIO_RESET_PIN', 38)
-    env_vars["enable_webserver"] = os.getenv('ALWAYS_USE_WEBSERVER', 0)
+    env_vars["enable_webserver"] = os.getenv('ALWAYS_USE_HTTPSERVER', 0)
     env_vars["pull_up_down"] = os.getenv('PULL_UP_DOWN', 'NONE')
 
+    if env_vars["enable_webserver"] == "1":
+        env_vars["enable_webserver"] = "True"
+    else:
+        env_vars["enable_webserver"] = "False"
+        
     GPIO.setmode(GPIO.BOARD)
     gpio_pin = int(env_vars["gpio_pin"])
 
@@ -183,7 +188,7 @@ def main():
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server_socket.bind((SERVER_HOST, SERVER_PORT))
         server_socket.listen(1)
-        print("Web server listening on port {0}...".format(SERVER_PORT))
+        print("HTTP server listening on port {0}...".format(SERVER_PORT))
 
         t = threading.Thread(target=background_web, args=(server_socket,))
         t.start()

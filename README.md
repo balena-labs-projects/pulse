@@ -68,3 +68,5 @@ This block utilizes the "raspberry-gpio-python" module, commonly known as [RPi.G
 
 ## Use with other blocks
 The pulse block works well with our [connector block](https://github.com/balenablocks/connector) and [dashboard block](https://github.com/balenablocks/dashboard). Connect them together to quickly create dashboards for your pulse data.
+
+We also have an [LED Display](https://github.com/balenalabs-incubator/led-sensor-display) project that complements this block by allowing you to view the pulse data on a four digit seven segment LED.

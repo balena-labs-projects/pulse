@@ -25,15 +25,15 @@ services:
     restart: always
     privileged: true
     labels:
-      io.balena.features.balena-api: '1'
+      io.balena.features.supervisor-api: '1'
     expose:
       - '7575'
 ```
 
-Note that the container must be privileged in order to access the GPIO pins, as well as include the balena-api label to access the device's api features.
+Note that the container must be privileged in order to access the GPIO pins, as well as include the balena supervisor-api label to access the device's api features.
 
 ## Data
-The counter data is available as json either as an mqtt payload or via the built-in webserver. To use mqtt provide an address for the `MQTT_ADDRESS` service variable. If no mqtt address is set, the webserver will be available on port 7575. To force the webserver to be active along with mqtt, set the `ALWAYS_USE_WEBSERVER` service variable to `True`.
+The counter data is available as json either as an mqtt payload or via the built-in  HTTP server. To use mqtt provide an address for the `MQTT_ADDRESS` service variable. If no mqtt address is set, the  HTTP server will be available on port 7575. To force the HTTP server to be active along with mqtt, set the `ALWAYS_USE_HTTPSERVER` service variable to `True`.
 
 The JSON will be in the following format:
 `{"uuid": "a74be18a3fdc0b3bfb510e2cf84d6008", "gpio": 37, "pulse_per_second": 3, "pulse_per_minute": 180, "pulse_per_hour": 3145, "pulse_count": 3150, "pps_mult": 3, "ppm_mult": 180, "pph_mult": 3145}` 
@@ -59,12 +59,12 @@ You can cause the running pulse count, `pulse_count` to reset to zero by sending
 | `GPIO_RESET_PIN` | Sets the pin used to reset the running pulse count. Normally pulled down and debounced 200 ms | 38|
 | `PULSE_MULTIPLIER` | Multiplies the pulses per second, minute, and hour by this factor as pps_mult, ppm_mult and pph_mult respectively | 1 |
 | `BOUNCE_TIME` | Number of milliseconds to wait before counting a pulse, used to debounce noisy mechanical switches | 0 |
-| `MQTT_ADDRESS` | Provide the address of an MQTT broker for the block to publish data to. If this variable is not set and a container on the device is named mqtt, it will publish to that instead. Either disables the internal webserver unless `ALWAYS_USE_WEBSERVER` is set to `True` | none |
-| `ALWAYS_USE_WEBSERVER` | Set to True to enable the internal webserver even when it is automatically disabled due to the detection of mqtt | 0 |
+| `MQTT_ADDRESS` | Provide the address of an MQTT broker for the block to publish data to. If this variable is not set and a container on the device is named mqtt, it will publish to that instead. Either disables the internal HTTP server unless `ALWAYS_USE_HTTPSERVER` is set to `True` | none |
+| `ALWAYS_USE_HTTPSERVER` | Set to True to enable the internal HTTP server even when it is automatically disabled due to the detection of mqtt | 0 |
 
 
 ## How it works
-This block utilizes the "raspberry-gpio-python" module, commonly known as [RPi.GPIO](https://sourceforge.net/projects/raspberry-gpio-python/). Specifically, the event_detected() function is used in a while loop that counts the pulses. A separate thread runs each second to aggregate the pulses counted in that second and add them to a running queue so that the pulses per minute and pulses per hour can be calculated. When activated, a minimal webserver runs in its own thread using a simple socket to respond to client requests.
+This block utilizes the "raspberry-gpio-python" module, commonly known as [RPi.GPIO](https://sourceforge.net/projects/raspberry-gpio-python/). Specifically, the event_detected() function is used in a while loop that counts the pulses. A separate thread runs each second to aggregate the pulses counted in that second and add them to a running queue so that the pulses per minute and pulses per hour can be calculated. When activated, a minimal HTTP server runs in its own thread using a simple socket to respond to client requests.
 
 ## Use with other blocks
 The pulse block works well with our [connector block](https://github.com/balenablocks/connector) and [dashboard block](https://github.com/balenablocks/dashboard). Connect them together to quickly create dashboards for your pulse data.

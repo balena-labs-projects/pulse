@@ -1,7 +1,7 @@
 name: pulse
 description: >-
   detect and publish GPIO pulse data on the Raspberry Pi via http and/or mqtt
-version: 1.0.0
+version: 0.0.2
 type: sw.application
 assets:
   repository:

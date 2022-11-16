@@ -1,0 +1,26 @@
+- commits:
+    - subject: moving from balenablocks to balena-labs-projects
+      hash: ee958c474130f2868bea0d1bd30af2556be6f68c
+      body: ""
+      footer:
+        Signed-off-by: Flynn Joffray <flynn@balena.io>
+        signed-off-by: Flynn Joffray <flynn@balena.io>
+        Change-type: patch
+        change-type: patch
+      author: Flynn Joffray
+      nested: []
+    - subject: "patch: repo file"
+      hash: 85661640a81d8e69cbce017929fdeb6a72bb5827
+      body: ""
+      footer: {}
+      author: Phil Wilson
+      nested: []
+    - subject: "patch: add build script"
+      hash: 4fd32ef27f1425b1da242969d5e0612debb4778e
+      body: ""
+      footer: {}
+      author: Phil Wilson
+      nested: []
+  version: 0.0.2
+  title: ""
+  date: 2022-11-16T03:58:50.568Z

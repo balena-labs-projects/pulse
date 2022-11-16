@@ -2,7 +2,7 @@ version: '2'
 
 services:
   pulse:
-    image: balenablocks/pulse
+    image: bh.cr/balenalabs/pulse
     restart: always
     privileged: true
     labels:

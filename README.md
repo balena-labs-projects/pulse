@@ -21,7 +21,8 @@ version: '2'
 
 services:
   pulse:
-    image: balenablocks/pulse
+    # Replace <arch> with your specified architecture, armv7hf for a raspi 3, or aarch64 for a raspi 4
+    image: bh.cr/balenalabs/pulse-<arch>
     restart: always
     privileged: true
     labels:
@@ -67,6 +68,6 @@ You can cause the running pulse count, `pulse_count` to reset to zero by sending
 This block utilizes the "raspberry-gpio-python" module, commonly known as [RPi.GPIO](https://sourceforge.net/projects/raspberry-gpio-python/). Specifically, the event_detected() function is used in a while loop that counts the pulses. A separate thread runs each second to aggregate the pulses counted in that second and add them to a running queue so that the pulses per minute and pulses per hour can be calculated. When activated, a minimal HTTP server runs in its own thread using a simple socket to respond to client requests.
 
 ## Use with other blocks
-The pulse block works well with our [connector block](https://github.com/balenablocks/connector) and [dashboard block](https://github.com/balenablocks/dashboard). Connect them together to quickly create dashboards for your pulse data.
+The pulse block works well with our [connector block](https://github.com/balena-labs-projects/connector) and [dashboard block](https://github.com/balena-labs-projects/dashboard). Connect them together to quickly create dashboards for your pulse data.
 
 We also have an [LED Display](https://github.com/balenalabs-incubator/led-sensor-display) project that complements this block by allowing you to view the pulse data on a four digit seven segment LED.
